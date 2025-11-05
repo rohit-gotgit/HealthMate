@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HealthMate — Medical Assistant</title>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<style>
+/* ---------- Base & Layout ---------- */
+:root {
+  --primary: #173a6b;
+  --accent: #2f8f6e;
+  --muted: #5b6b82;
+  --card: #ffffff;
+  --bg: #f6f9ff;
+  --border-color: #d7e2f3;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+html, body { 
+  height: 100%; 
+  margin: 0; 
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; 
+  background: var(--bg);
+  color: #122233;
+}
+.container { 
+  max-width: 1200px; 
+  margin: 0 auto; 
+  padding: 0 20px; 
+}
+
+/* ---------- Header (Full-Width) ---------- */
+header { 
+  background: linear-gradient(90deg, var(--primary), #2b57a6); 
+  color: white; 
+  padding: 18px 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+header .container {
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between;
+}
+.brand { 
+  display: flex; 
+  align-items: center; 
+  gap: 14px; 
+}
+.brand h1 { 
+  margin: 0; 
+  font-size: 20px; 
+}
+nav a { 
+  color: white; 
+  text-decoration: none; 
+  margin-left: 22px; 
+  font-weight: 600; 
+  font-size: 14px; 
+  opacity: 0.9;
+  transition: opacity 0.2s;
+}
+nav a:hover {
+  opacity: 1;
+}
+
+/* ---------- Hero Section ---------- */
+.hero { 
+  text-align: center; 
+  padding: 50px 0 30px; 
+}
+.hero h2 { 
+  font-size: 34px; 
+  margin: 0 0 10px; 
+  color: var(--primary); 
+}
+.hero p { 
+  margin: 0 0 22px; 
+  color: var(--muted); 
+  font-size: 18px;
+  max-width: 780px; 
+  margin-left: auto; 
+  margin-right: auto; 
+}
+.search-area { 
+  margin: 22px auto 10px; 
+  display: flex; 
+  gap: 12px; 
+  align-items: center; 
+  justify-content: center; 
+}
+.search-input { 
+  width: 520px; 
+  max-width: 80%; 
+  padding: 14px 16px; 
+  border-radius: 12px; 
+  border: 1px solid var(--border-color); 
+  background: white; 
+  font-size: 15px; 
+  box-shadow: var(--shadow);
+}
+.search-input:focus {
+  outline: 2px solid var(--primary);
+  border-color: var(--primary);
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  border: none; 
+  cursor: pointer; 
+  font-size: 15px; 
+  border-radius: 10px; 
+  padding: 12px 18px; 
+  color: white;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-primary { 
+  background: var(--primary); 
+}
+.btn-primary:hover {
+  background: #2b57a6;
+}
+.btn-accent { 
+  background: var(--accent); 
+}
+.btn-accent:hover {
+  background: #257057;
+}
+/* NEW Outline Button */
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--border-color);
+  color: var(--primary);
+  padding: 10px 18px; /* Adjust padding for border */
+}
+.btn-outline:hover {
+  background: #f6f9ff;
+  border-color: var(--primary);
+}
+
+/* ---------- NEW: Content Grid Layout ---------- */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1.8fr 1.2fr; /* 60/40 split */
+  gap: 26px;
+  padding-bottom: 30px;
+}
+.main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.sidebar-column {
+  /* The chat-area will be sticky */
+  position: sticky;
+  top: 26px;
+  height: 90vh; /* Adjust as needed */
+}
+
+/* ---------- Cards ---------- */
+.card { 
+  background: var(--card); 
+  border-radius: 12px; 
+  padding: 24px; 
+  box-shadow: var(--shadow);
+  border: 1px solid #eef2f9;
+}
+/* Map-specific card styles */
+#mapWrap {
+  padding: 0;
+  overflow: hidden; /* Ensures border-radius clips the map */
+}
+#map { 
+  height: 380px; 
+  background: #eee; 
+  border: none;
+}
+
+/* ---------- Chat Area (Sidebar) ---------- */
+.chat-area { 
+  height: 100%;
+}
+.chat-card { 
+  background: white; 
+  border-radius: 12px; 
+  padding: 20px;
+  box-shadow: var(--shadow);
+  border: 1px solid #eef2f9;
+  /* Make chat-card fill the sidebar */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+#chatbox { 
+  height: 100%; /* Take up available space */
+  overflow: auto; 
+  padding: 10px 5px; 
+  flex: 1; /* This is the key */
+  background: #fdfdfd;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+.message { 
+  display: block; 
+  clear: both; 
+  margin: 12px 0; 
+  max-width: 85%; 
+  padding: 12px 14px; 
+  border-radius: 14px; 
+  line-height: 1.4; 
+}
+.message.user { 
+  background: linear-gradient(180deg, var(--primary), #2b57a6); 
+  color: white; 
+  float: right; 
+  border-radius: 14px 14px 6px 14px; 
+}
+.message.bot { 
+  background: #f7f9fc; 
+  color: #0f1724; 
+  float: left; 
+  border-radius: 14px 14px 14px 6px; 
+  border: 1px solid #eef2f9;
+}
+.typing { 
+  opacity: .7; 
+  font-style: italic; 
+  color: var(--muted); 
+}
+.chat-controls { 
+  display: flex; 
+  gap: 10px; 
+  align-items: center; 
+  padding-top: 15px; 
+}
+.chat-input { 
+  flex: 1; 
+  padding: 12px; 
+  border-radius: 10px; 
+  border: 1px solid var(--border-color); 
+  font-size: 15px; 
+  background: white; 
+}
+.send-btn { 
+  padding: 10px 16px; 
+  border-radius: 10px; 
+  border: none; 
+  background: var(--primary); 
+  color: white; 
+  cursor: pointer; 
+}
+.quick-bar { 
+  display: flex; 
+  gap: 8px; 
+  flex-wrap: wrap; 
+  padding: 15px 0;
+  border-top: 1px solid #eef2f9;
+  margin-top: 10px;
+}
+.qa-btn { 
+  background: #eef7f3; 
+  border: 1px solid #d7efe7; 
+  color: var(--primary); 
+  padding: 8px 12px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+}
+
+/* ---------- Meds List Card ---------- */
+#myMedsListDisplay { 
+  margin-top: 16px; 
+}
+.med-list-item { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 12px; 
+  border-radius: 8px; 
+  background: #f7f9fc; 
+  margin-bottom: 8px;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+}
+.med-list-item span { 
+  text-transform: capitalize; 
+}
+.med-list-item button { 
+  background: #e53e3e; 
+  color: white; 
+  border: none; 
+  border-radius: 6px; 
+  padding: 4px 8px; 
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ---------- Interaction Warning (Inside Card) ---------- */
+#medInteractionWarning {
+  border-top: 1px solid #fde2e2;
+  background: #fff5f5;
+  border-radius: 8px;
+  padding: 14px;
+  margin-top: 20px;
+}
+#medInteractionWarning h3 {
+  color: #c53030;
+  margin-top: 0;
+  font-size: 18px;
+}
+#medInteractionWarning li {
+  margin-bottom: 8px;
+  color: #555;
+}
+
+/* ---------- Footer (Full-Width) ---------- */
+footer { 
+  margin-top: 40px; 
+  padding: 25px 0; 
+  color: #fff; 
+  background: linear-gradient(90deg, var(--primary), #305fa8); 
+  text-align: center; 
+}
+
+</style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="brand">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+          <rect width="24" height="24" rx="6" fill="#ffffff10"></rect>
+          <path d="M12 3v18" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M3 12h18" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <h1>HealthMate</h1>
+      </div>
+      <nav>
+        <a href="#">Home</a>
+        <a href="#">Medicines</a>
+        <a href="#">Symptoms</a>
+        <a href="#">Support</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <section class="hero">
+      <h2>Find Medicine Information & Nearby Hospitals</h2>
+      <p>Your quick medical reference and assistant — fast, clean & reliable.</p>
+
+      <div class="search-area">
+        <input id="medicineInput" class="search-input" type="text" placeholder="Search medicine (e.g., Paracetamol)" />
+        <button class="btn btn-primary" onclick="searchMedicine()">Search</button>
+      </div>
+
+      <div style="margin-top:20px; display: flex; gap: 12px; justify-content: center;">
+        <button class="btn btn-accent" onclick="openHospitals()">📍 Nearby Hospitals</button>
+        <button class="btn btn-outline" onclick="toggleMyMeds()">📝 Manage My Meds List</button>
+      </div>
+    </section>
+
+    <main class="content-grid">
+      
+      <div class="main-column">
+        
+        <section id="medicineCard" class="card" style="display:none;">
+          <h3 id="medTitle" style="margin-top:0;">Medicine</h3>
+          <p><strong>Uses:</strong> <span id="medUses"></span></p>
+          <p><strong>Dosage:</strong> <span id="medDose"></span></p>
+          <p><strong>Caution:</strong> <span id="medCaution"></span></p>
+          
+          <div id="medInteractionWarning" style="display:none;"></div>
+        </section>
+
+        <section id="myMedsCard" class="card" style="display:none;">
+          <h3 style="margin-top:0; color:var(--primary)">My Medications List</h3>
+          <p style="color:var(--muted); font-size:14px; margin-top: -5px;">Meds added here are stored in your browser and used to check for interactions.</p>
+          <div class="search-area" style="margin: 0 0 16px; justify-content: flex-start;">
+            <input id="medsListInput" class="search-input" style="width: 300px;" type="text" placeholder="Add a medicine (e.g., warfarin)" />
+            <button class="btn btn-primary" onclick="addMedToList()">Add</button>
+          </div>
+          <div id="myMedsListDisplay">
+            </div>
+        </section>
+
+        <div class="card map-wrap" id="mapWrap" style="display:none;">
+          <div id="map"></div>
+        </div>
+
+      </div>
+
+      <aside class="sidebar-column">
+        
+        <section class="chat-area">
+          <div class="chat-card">
+            <div style="display:flex;justify-content:space-between;align-items:center; padding-bottom: 12px;">
+              <h3 style="margin:0;color:var(--primary)">Medical Assistant</h3>
+              <div style="font-size:13px;color:var(--muted)">Powered by your local model</div>
+            </div>
+
+            <div id="chatbox"></div>
+
+            <div class="quick-bar">
+              <button class="qa-btn" onclick="quickAction('symptom')">Symptom Check</button>
+              <button class="qa-btn" onclick="quickAction('diet')">Diet Plan</button>
+              <button class="qa-btn" onclick="quickAction('workout')">Workout Tips</button>
+            </div>
+
+            <div class="chat-controls">
+              <input id="chatInput" class="chat-input" placeholder="Type your message..." />
+              <button class="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+          </div>
+        </section>
+
+      </aside>
+
+    </main>
+  </div>
+
+  <footer>
+    <div class="container">
+      <small>© 2025 HealthMate — Medical Reference Platform</small>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+/* ======================================================================== */
+/* ======================= JAVASCRIPT (Unchanged) ======================= */
+/* ======================================================================== */
+
+/* =============== Medicine DB (Expanded) =============== */
+const sampleDB = {
+  "paracetamol": {
+    title: "Paracetamol",
+    uses: "Pain relief, fever reduction",
+    dose: "500 mg every 4-6 hours as needed. Max 3 g/day for typical adults (varies).",
+    caution: "Avoid overdose; consult doctor if liver disease present."
+  },
+  "ibuprofen": {
+    title: "Ibuprofen",
+    uses: "Pain relief, reduces inflammation, fever reduction",
+    dose: "200-400 mg every 4-6 hours; avoid long-term high doses.",
+    caution: "Avoid if you have active ulcer or kidney disease."
+  },
+  "aspirin": {
+    title: "Aspirin",
+    uses: "Pain relief, anti-inflammatory, blood thinner (low-dose)",
+    dose: "81-325 mg daily for heart protection; 325-650 mg for pain.",
+    caution: "Risk of bleeding; avoid with ulcers or bleeding disorders."
+  },
+  "warfarin": {
+    title: "Warfarin (Coumadin)",
+    uses: "Anticoagulant (blood thinner) to prevent clots.",
+    dose: "Varies highly; requires regular blood monitoring (INR).",
+    caution: "High risk of bleeding. Many drug and food interactions."
+  }
+};
+
+/* --- Interaction DB --- */
+const interactionDB = {
+  "paracetamol": {
+    "warfarin": "High Risk: May increase the blood-thinning effect of warfarin, raising bleeding risk. Consult doctor immediately."
+  },
+  "ibuprofen": {
+    "warfarin": "High Risk: Significantly increases bleeding risk. Avoid combination unless directed by a doctor.",
+    "aspirin": "Moderate Risk: Ibuprofen can interfere with the anti-platelet (heart-protective) effects of low-dose aspirin."
+  },
+  "aspirin": {
+    "warfarin": "High Risk: Both are blood thinners; combination greatly increases bleeding risk. Only use under strict medical supervision.",
+    "ibuprofen": "Moderate Risk: Ibuprofen can interfere with the anti-platelet (heart-protective) effects of low-dose aspirin."
+  },
+  "warfarin": { // Reverse lookups for convenience
+    "paracetamol": "High Risk: May increase the blood-thinning effect of warfarin, raising bleeding risk. Consult doctor immediately.",
+    "ibuprofen": "High Risk: Significantly increases bleeding risk. Avoid combination unless directed by a doctor.",
+    "aspirin": "High Risk: Both are blood thinners; combination greatly increases bleeding risk. Only use under strict medical supervision."
+  }
+};
+/* --- END NEW --- */
+
+
+/* =============== Medicine Search =============== */
+function searchMedicine() {
+  document.getElementById('medInteractionWarning').innerHTML = '';
+  document.getElementById('medInteractionWarning').style.display = 'none';
+  
+  const q = document.getElementById('medicineInput').value.trim().toLowerCase();
+  const card = document.getElementById('medicineCard');
+  if (!q) { card.style.display = 'none'; return; }
+  const info = sampleDB[q];
+  
+  if (info) {
+    document.getElementById('medTitle').textContent = info.title;
+    document.getElementById('medUses').textContent = info.uses;
+    document.getElementById('medDose').textContent = info.dose;
+    document.getElementById('medCaution').textContent = info.caution;
+    card.style.display = 'block';
+    addChatMessage(`Searched medicine: **${info.title}** — showing details above.`, 'bot');
+  } else {
+    card.style.display = 'block';
+    document.getElementById('medTitle').textContent = q.charAt(0).toUpperCase() + q.slice(1);
+    document.getElementById('medUses').textContent = 'Details not found in local DB.';
+    document.getElementById('medDose').textContent = '-';
+    document.getElementById('medCaution').textContent = '-';
+    addChatMessage(`Searched medicine: **${q}** — no local data found.`, 'bot');
+  }
+  
+  const warnings = checkInteractions(q);
+  displayInteractions(info ? info.title : q, warnings);
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* =============== Symptom-to-Medicine =============== */
+function checkResponseForMedicine(botText) {
+  const lowerText = botText.toLowerCase();
+  const card = document.getElementById('medicineCard');
+  const currentTitle = document.getElementById('medTitle').textContent.toLowerCase();
+  
+  for (const medKey of Object.keys(sampleDB)) {
+    if (lowerText.includes(medKey)) {
+      if (card.style.display === 'block' && currentTitle === medKey) {
+        break;
+      }
+      
+      const info = sampleDB[medKey];
+      
+      document.getElementById('medInteractionWarning').innerHTML = '';
+      document.getElementById('medInteractionWarning').style.display = 'none';
+
+      document.getElementById('medTitle').textContent = info.title;
+      document.getElementById('medUses').textContent = info.uses;
+      document.getElementById('medDose').textContent = info.dose;
+      document.getElementById('medCaution').textContent = info.caution;
+      card.style.display = 'block';
+      
+      const warnings = checkInteractions(medKey);
+      displayInteractions(info.title, warnings);
+      
+      addChatMessage(`💡 It looks like your symptoms might be related to **${info.title}**. I've pulled up the details for you.`, 'bot');
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      break;
+    }
+  }
+}
+
+
+/* =============== NEW: Meds List & Interaction Logic =============== */
+const MY_MEDS_KEY = 'myMedsList';
+
+function getMyMedsList() {
+  return new Set(JSON.parse(localStorage.getItem(MY_MEDS_KEY) || '[]'));
+}
+
+function saveMedsList(medsSet) {
+  localStorage.setItem(MY_MEDS_KEY, JSON.stringify(Array.from(medsSet)));
+}
+
+function toggleMyMeds() {
+  const card = document.getElementById('myMedsCard');
+  if (card.style.display === 'block') {
+    card.style.display = 'none';
+  } else {
+    card.style.display = 'block';
+    renderMyMedsList();
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+function addMedToList() {
+  const input = document.getElementById('medsListInput');
+  const medName = input.value.trim().toLowerCase();
+  if (!medName) return;
+  
+  const myMeds = getMyMedsList();
+  myMeds.add(medName);
+  saveMedsList(myMeds);
+  renderMyMedsList();
+  input.value = '';
+}
+
+function removeMedFromList(medName) {
+  const myMeds = getMyMedsList();
+  myMeds.delete(medName);
+  saveMedsList(myMeds);
+  renderMyMedsList();
+}
+
+function renderMyMedsList() {
+  const display = document.getElementById('myMedsListDisplay');
+  const myMeds = getMyMedsList();
+  
+  if (myMeds.size === 0) {
+    display.innerHTML = '<p style="color:var(--muted); text-align:center;">Your medication list is empty.</p>';
+    return;
+  }
+  
+  let html = '';
+  myMeds.forEach(medName => {
+    html += `
+      <div class="med-list-item">
+        <span>${escapeHtml(medName)}</span>
+        <button onclick="removeMedFromList('${escapeHtml(medName)}')">Remove</button>
+      </div>
+    `;
+  });
+  display.innerHTML = html;
+}
+
+function checkInteractions(medicineName) {
+  medicineName = medicineName.toLowerCase();
+  const myMeds = getMyMedsList();
+  const warnings = [];
+  
+  const interactionMap = interactionDB[medicineName] || {};
+  for (const medOnList of myMeds) {
+    if (interactionMap[medOnList]) {
+      warnings.push({ med: medOnList, warning: interactionMap[medOnList] });
+    }
+  }
+  return warnings;
+}
+
+function displayInteractions(medicineName, warnings) {
+  const container = document.getElementById('medInteractionWarning');
+  if (warnings.length === 0) {
+    container.innerHTML = '';
+    container.style.display = 'none';
+    return;
+  }
+  
+  let html = `<h3>⚠️ Interaction Warning for ${escapeHtml(medicineName)}</h3>
+    <p>This medicine may interact with your saved medication list:</p>
+    <ul>`;
+  
+  warnings.forEach(w => {
+    html += `<li><strong>With ${escapeHtml(w.med)}:</strong> ${escapeHtml(w.warning)}</li>`;
+  });
+  
+  html += '</ul><small>This is not a complete list. Always consult your doctor or pharmacist.</small>';
+  
+  container.innerHTML = html;
+  container.style.display = 'block';
+}
+
+function checkQueryForInteractions(text) {
+  const lowerText = text.toLowerCase();
+  const foundMeds = [];
+  
+  for (const medKey of Object.keys(sampleDB)) {
+    if (lowerText.includes(medKey)) {
+      foundMeds.push(medKey);
+    }
+  }
+  
+  if (foundMeds.length === 2) {
+    const med1 = foundMeds[0];
+    const med2 = foundMeds[1];
+    
+    const interactionMap = interactionDB[med1] || {};
+    if (interactionMap[med2]) {
+      const warning = interactionMap[med2];
+      const msg = `
+⚠️ **Direct Interaction Check:**
+
+You asked about **${med1}** and **${med2}**.
+
+**Warning:** ${warning}
+
+*Please confirm this with your doctor.*
+      `;
+      addChatMessage(msg, 'bot');
+    }
+  }
+}
+/* --- END NEW --- */
+
+
+/* =============== Chatbot (frontend) =============== */
+const chatbox = document.getElementById('chatbox');
+
+function addChatMessage(text, sender = 'bot') {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message ' + (sender === 'user' ? 'user' : 'bot');
+
+  if (sender === 'user') {
+    wrapper.textContent = text;
+  } else {
+    try {
+      wrapper.innerHTML = marked.parse(String(text).replace(/^<p>|<\/p>$/g, ''));
+    } catch (e) {
+      wrapper.textContent = text;
+    }
+  }
+  
+  chatbox.appendChild(wrapper);
+  chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function setTypingIndicator(show = true) {
+  if (show) {
+    const t = document.createElement('div');
+    t.className = 'typing';
+    t.id = 'typingIndicator';
+    t.textContent = 'Assistant is typing...';
+    chatbox.appendChild(t);
+    chatbox.scrollTop = chatbox.scrollHeight;
+  } else {
+    const t = document.getElementById('typingIndicator');
+    if (t) t.remove();
+  }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  addChatMessage(text, 'user');
+  checkQueryForInteractions(text);
+  
+  input.value = '';
+  setTypingIndicator(true);
+
+  try {
+    const resp = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    });
+    const data = await resp.json();
+    setTypingIndicator(false);
+    const botText = data?.response || data?.reply || 'Sorry, no response.';
+    
+    addChatMessage(botText, 'bot');
+    checkResponseForMedicine(botText);
+
+  } catch (err) {
+    setTypingIndicator(false);
+    addChatMessage('⚠ Error: could not reach server.', 'bot');
+    console.error(err);
+  }
+}
+
+document.getElementById('chatInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+/* =============== Quick Actions =============== */
+function quickAction(type) {
+  const map = {
+    'symptom': 'I am experiencing a fever and sore throat. What should I do?',
+    'diet': 'Suggest a balanced diet for a 76kg male who goes to gym regularly.',
+    'workout': 'Give a 4-day split gym workout for a beginner-intermediate.',
+    'reminder': 'Set a medication reminder: take vitamin D daily at 9 AM.'
+  };
+  const text = map[type];
+  if (!text) return;
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+/* =============== Hospitals via OSM =============== */
+let map;
+let hospitalMarkers = [];
+
+function openHospitals() {
+  addChatMessage('🔎 Searching for nearby hospitals — showing on map below.', 'bot');
+  const mapWrap = document.getElementById('mapWrap');
+  mapWrap.style.display = 'block';
+
+  if (!navigator.geolocation) {
+    addChatMessage('⚠ Geolocation not supported by your browser.', 'bot');
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude: lat, longitude: lon } = pos.coords;
+
+    if (!map) {
+      map = L.map('map').setView([lat, lon], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+    } else {
+      map.setView([lat, lon], 13);
+      hospitalMarkers.forEach(m => map.removeLayer(m));
+      hospitalMarkers = [];
+    }
+    
+    mapWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    const you = L.marker([lat, lon], { title: 'You are here' }).addTo(map);
+    you.bindPopup('You are here').openPopup();
+
+    const query = `[out:json];node(around:4000,${lat},${lon})[amenity~"hospital|clinic|doctors|healthcare"];out;`;
+
+    try {
+      const res = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        body: query,
+        headers: { 'Content-Type': 'text/plain' }
+      });
+      if (!res.ok) throw new Error('Overpass error');
+      const json = await res.json();
+      const places = json.elements || [];
+
+      if (places.length === 0) {
+        addChatMessage('⚠ No hospitals/clinics found within 4 km.', 'bot');
+        return;
+      }
+
+      addChatMessage(`✅ Found ${places.length} hospitals/clinics nearby. Click markers on the map to view details.`, 'bot');
+
+      places.forEach(p => {
+        const name = (p.tags?.name || p.tags?.brand) || 'Hospital / Clinic';
+        const marker = L.marker([p.lat, p.lon]).addTo(map);
+        marker.bindPopup(`<strong>${escapeHtml(name)}</strong><br>${escapeHtml(p.tags?.addr_full || p.tags?.['addr:street'] || '')}`);
+        hospitalMarkers.push(marker);
+      });
+
+    } catch (e) {
+      console.error(e);
+      addChatMessage('⚠ Error searching for hospitals (Overpass). Try again later.', 'bot');
+    }
+
+  }, err => {
+    console.warn(err);
+    addChatMessage('⚠ Please allow location access to find hospitals.', 'bot');
+  }, { timeout: 10000 });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+// --- NEW: Load meds list on page load ---
+window.onload = renderMyMedsList;
+
+</script>
+</body>
+</html>
