@@ -1,120 +1,168 @@
-# 🩺 HealthMate — AI Medical Assistant & Symptom Support System
+# HealthMate
 
-HealthMate is an AI powered medical assistant web application that helps users get quick symptom guidance, basic medicine suggestions, first-aid steps, and nearby hospital locations. It combines rule-based medical flows with GPT powered responses to deliver structured, safe, and fast health support.
-
-Built as a full stack AI integrated project using Flask and modern web technologies.
+AI-powered medical assistant and symptom support platform built using Flask and GPT-based workflows. HealthMate provides structured symptom guidance, first-aid support, medicine awareness, and nearby hospital discovery through a responsive conversational interface.
 
 ---
 
-## 🚀 Key Features
+## Features
 
-• AI powered medical chat assistant using GPT based workflows  
-• Symptom based guidance with structured response logic  
-• Basic medicine and precaution suggestions for common conditions  
-• First aid step guidance for emergency scenarios  
-• Nearby hospital locator using geolocation and OpenStreetMap  
-• Fast API style backend with optimized request handling  
-• Safety filtered responses with controlled prompt flows  
-• Responsive chat interface with quick action buttons  
-• Caching and rate limiting to reduce repeated API calls  
-• Handles multiple symptom queries with consistent structured output  
-
----
-
-## 🧠 How It Works
-
-HealthMate combines:
-
-- Rule based symptom decision flows  
-- GPT powered conversational reasoning  
-- Flask backend request processing  
-- Location search using map APIs  
-- Structured response formatting for safety and clarity  
-
-The system first checks defined medical logic paths, then enhances responses using AI where appropriate, ensuring helpful but controlled outputs.
+- AI-powered medical chat assistant
+- Symptom-based guidance system
+- Basic medicine and precaution suggestions
+- First-aid assistance workflows
+- Nearby hospital locator using geolocation
+- GPT-enhanced conversational responses
+- Safety-filtered response generation
+- RESTful backend architecture
+- Rate limiting and caching support
+- Responsive multi-query chat interface
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
-**Backend**
+### Backend
 - Python
 - Flask
 - REST APIs
-- GPT API integration
 
-**Frontend**
+### Frontend
 - HTML
 - CSS
 - JavaScript
 
-**AI & Data**
-- GPT based response generation
-- Rule based symptom mapping
-- Structured prompt pipelines
+### AI Integration
+- GPT API
+- Prompt engineering
+- Rule-based symptom mapping
 
-**APIs**
-- OpenStreetMap / Geolocation services
-
----
-
-## 📦 Core Modules
-
-- Symptom query processor  
-- AI response engine  
-- Medicine suggestion mapper  
-- First aid instruction module  
-- Hospital search service  
-- Safety filter layer  
-- Chat interface controller  
+### APIs & Services
+- OpenStreetMap
+- Geolocation APIs
 
 ---
 
-## ⚡ Performance Notes
+## System Flow
 
-- Average AI response time under ~2 seconds  
-- Reduced redundant API usage through caching  
-- Rate limiting added for stability under load  
-- Designed for multi query conversational flow  
-
----
-
-## 🎯 Use Cases
-
-- Quick symptom guidance  
-- First level medical direction  
-- Basic medicine awareness  
-- Emergency first aid reference  
-- Finding nearby hospitals  
-- Health information assistance  
-
----
-
-## ⚠️ Disclaimer
-
-HealthMate is an educational and assistance tool.  
-It does **not** replace professional medical diagnosis or treatment.  
-Users should always consult qualified medical professionals for serious conditions.
+```text
+User Query
+   ↓
+Frontend Chat Interface
+   ↓
+Flask Backend
+   ↓
+Rule-Based Medical Logic
+   ↓
+GPT Response Processing
+   ↓
+Safety Validation Layer
+   ↓
+Structured Response Output
+```
 
 ---
 
-## 📌 Future Improvements
+## Project Structure
 
-- User health history tracking  
-- Multi language support  
-- Voice based interaction  
-- Doctor appointment integration  
-- Model fine tuning on medical datasets  
+```text
+HealthMate
+├── app.py
+├── routes
+├── services
+├── templates
+├── static
+├── utils
+├── requirements.txt
+└── .env
+```
 
 ---
 
-## ⭐ Support
+## Core Modules
 
-If you found this project useful, consider giving it a star on GitHub. It helps a lot and motivates further development.
+- Symptom query processor
+- AI response engine
+- Medicine suggestion system
+- First-aid guidance module
+- Hospital locator service
+- Safety filter layer
+- Chat interface controller
 
 ---
 
-## 👨‍💻 Author
+## Performance
+
+- Optimized API request handling
+- Reduced redundant calls through caching
+- Rate limiting for stability
+- Designed for scalable conversational flow
+- Fast structured AI responses
+
+---
+
+## Use Cases
+
+- Symptom assistance
+- Basic healthcare guidance
+- First-aid reference
+- Nearby hospital search
+- Health information support
+- Educational medical assistance
+
+---
+
+## Installation
+
+### Clone Repository
+
+```bash
+git clone https://github.com/rohit-gotgit/HealthMate.git
+cd HealthMate
+```
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Setup Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+OPENAI_API_KEY=your_api_key
+FLASK_ENV=development
+```
+
+### Run Application
+
+```bash
+python app.py
+```
+
+---
+
+## Disclaimer
+
+HealthMate is intended for educational and assistance purposes only.
+
+The platform does not replace professional medical advice, diagnosis, or treatment. Users should consult qualified healthcare professionals for medical concerns or emergencies.
+
+---
+
+## Future Improvements
+
+- Voice-based interaction
+- Multi-language support
+- Doctor appointment integration
+- User medical history tracking
+- Fine-tuned healthcare models
+- Advanced analytics dashboard
+
+---
+
+## Author
 
 Rohit Kumar  
-Full Stack & AI Developer  
+Full Stack & AI Developer
